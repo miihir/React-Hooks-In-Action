@@ -1,37 +1,36 @@
-import { useState, Fragment } from "react";
-import { users } from "../../static.json";
+import { useState, useEffect } from "react";
+import Spinner from "../UI/Spinner";
+import getData from "../../utils/api";
 
-export default function UsersList() {
-  const [userIndex, setUserIndex] = useState(0);
-  const user = users[userIndex];
+export default function UsersList({ user, setUser }) {
+  const [users, setUsers] = useState(null);
+
+  useEffect(() => {
+    getData("http://localhost:3001/users").then((data) => {
+      setUsers(data);
+      setUser(data[0]);
+    });
+  }, [setUser]);
+
+  if (users === null) {
+    return (
+      <p>
+        <Spinner /> Loading bookables...
+      </p>
+    );
+  }
 
   return (
-    <Fragment>
-      <div>
-        <ul className='users items-list-nav'>
-          {users.map((u, i) => (
-            <li key={u.id} className={i === userIndex ? "selected" : ""}>
-              <button className='btn' onClick={() => setUserIndex(i)}>
-                {u.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {user && (
-        <div className='bookable-details'>
-          <div className='item'>
-            <div className='item-header'>
-              <h2>{user.name}</h2>
-            </div>
-            <div className='item-details'>
-              <h3>{user.title}</h3>
-              <p>{user.notes}</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </Fragment>
+    <div>
+      <ul className='users items-list-nav'>
+        {users.map((u, i) => (
+          <li key={u.id} className={u === user ? "selected" : ""}>
+            <button className='btn' onClick={() => setUser(users[i])}>
+              {u.name}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
